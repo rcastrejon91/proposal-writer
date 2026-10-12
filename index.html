@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proposal Writer — paste a job, get a proposal</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:640px;margin:0 auto;padding:16px;background:#fafafa;color:#111}
+h1{font-size:22px;margin:8px 0}p.s{color:#555;margin-top:0}
+label{font-weight:600;display:block;margin:14px 0 4px}
+textarea,input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;border:1px solid #ccc;border-radius:8px}
+textarea{min-height:150px}
+button{width:100%;padding:14px;font-size:17px;font-weight:700;border:0;border-radius:10px;background:#14a800;color:#fff;margin-top:14px}
+#out{white-space:pre-wrap;background:#fff;border:1px solid #ddd;border-radius:10px;padding:14px;margin-top:16px;display:none;line-height:1.45}
+#c{background:#111;display:none}
+</style></head><body>
+<h1>Proposal Writer</h1>
+<p class="s">Paste an Upwork job post. Get a proposal written for that exact job.</p>
+<label>Job post</label><textarea id="job" placeholder="Paste the full job description here"></textarea>
+<label>Your name</label><input id="name" placeholder="Ricardo">
+<label>One line about you (optional)</label><input id="me" placeholder="e.g. I build automations and websites for small businesses">
+<button id="go">Write my proposal</button>
+<div id="out"></div><button id="c">Copy proposal</button>
+<script>
+const SK=["python","javascript","react","node","wordpress","shopify","seo","excel","google sheets","zapier","make.com","n8n","automation","chatbot","ai","openai","chatgpt","api","scraping","data entry","copywriting","email","social media","video editing","logo","design","figma","canva","web design","landing page","php","sql","airtable","notion","crm","hubspot","lead generation","research","virtual assistant","writing","blog","translation","bookkeeping","quickbooks","flutter","ios","android","marketing","facebook ads","google ads","tiktok","youtube"];
+const $=i=>document.getElementById(i);
+["name","me"].forEach(k=>{$(k).value=localStorage.getItem(k)||"";$(k).oninput=()=>localStorage.setItem(k,$(k).value)});
+function sentences(t){return t.replace(/\s+/g," ").split(/(?<=[.!?])\s+/).filter(s=>s.length>20)}
+$("go").onclick=()=>{
+ const t=$("job").value.trim(); if(t.length<40){alert("Paste the full job post first.");return}
+ const lo=t.toLowerCase(), skills=SK.filter(s=>new RegExp("\\b"+s.replace(".","\\.")+"\\b").test(lo)).slice(0,4);
+ const ss=sentences(t);
+ const goal=(ss.find(s=>/\b(need|looking for|want|seeking|help|require)\b/i.test(s))||ss[0]||"").trim().replace(/^(hi|hello)[^a-z]*/i,"");
+ const qs=(t.match(/[^.?!\n]*\?/g)||[]).map(q=>q.trim()).filter(q=>q.length>8).slice(0,3);
+ const word=(t.match(/\b(?:start (?:your|the) (?:proposal|application|reply) with|include the word|write the word)\s+["“']?([\w-]+)/i)||[])[1];
+ const deadline=(t.match(/\b(asap|urgent|within \d+ \w+|by \w+day|\d+ (?:days|weeks))\b/i)||[])[0];
+ const n=$("name").value||"[Your name]", me=$("me").value;
+ let p=(word?word+" — ":"")+"Hi,\n\n";
+ p+="You said: \""+goal.slice(0,180)+(goal.length>180?"…":"")+"\" — I can do exactly that.\n\n";
+ if(me)p+=me.replace(/\.?$/,".")+" ";
+ if(skills.length)p+="This job is a direct fit for my work with "+skills.join(", ")+".\n\n";else p+="\n\n";
+ p+="How I'd handle it:\n1. Confirm the exact result you want and any examples you like.\n2. Deliver a first working version"+(deadline?" ("+deadline.toLowerCase()+" works for me)":" fast")+" so you can review it early.\n3. Revise until it's right, then hand over everything you need to own it.\n\n";
+ if(qs.length){p+="To your questions:\n"+qs.map(q=>"• "+q+" — [your answer]").join("\n")+"\n\n"}
+ p+="Quick question so I quote accurately: what does \"done\" look like for you on this?\n\nHappy to jump on a short call or start right away.\n\n"+n;
+ $("out").textContent=p;$("out").style.display="block";$("c").style.display="block";$("out").scrollIntoView({behavior:"smooth"})};
+$("c").onclick=()=>{navigator.clipboard.writeText($("out").textContent);$("c").textContent="Copied ✓";setTimeout(()=>$("c").textContent="Copy proposal",1500)};
+</script></body></html>
